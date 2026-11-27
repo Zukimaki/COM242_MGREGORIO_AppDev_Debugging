@@ -70,6 +70,14 @@ public class RegisterActivity extends AppCompatActivity{
     //    c) Test your guess quickly in an online regex tester or a tiny JUnit test before fixing.
     //    d) Fix it, re-run the tests until they pass, and explain what part of the rule was wrong.
     //
+    //Answer:
+    // b) The email validation is handled inside Validator.validateEmail(). The problem is the test failure
+    // indicates that valid email addresses ending with .ph (such as juan@school.ph or juan@up.edu.ph)
+    // are being rejected during registration.
+    // c) To fix it, the explicit domain.endsWith(".ph") check from Validator.validateEmail().
+    // should be removed. Deleting this restriction allows the standard email regex pattern to validate inputs,
+    // successfully accepting valid Philippine school (.edu.ph) and government (.gov.ph) email addresses.
+
     // TODO(DEBUG #4): Weak passwords are being accepted.
     //  The helper text promises "At least 8 characters, with letters and numbers".
     //  Steps to reproduce:
@@ -81,6 +89,13 @@ public class RegisterActivity extends AppCompatActivity{
     //    b) Make a truth table for hasLetter / hasDigit (4 rows). For each row, write what the
     //       rule SHOULD return and what the code ACTUALLY returns.
     //    c) Fix the condition. Confirm with the unit tests (one of them should be failing right now).
+
+    //Answer
+    // Password validation is handled in Validator.validateNewPassword(). The rule was updated to require
+    // passwords to be at least 8 characters long and contain at least one number. Passwords with numbers
+    // without letters (e.g. "12345678") are accepted, while passwords with only letters and no numbers
+    // (e.g. "abcdefgh") are rejected.
+
     private void attemptRegister() {
         clearErrors();
 

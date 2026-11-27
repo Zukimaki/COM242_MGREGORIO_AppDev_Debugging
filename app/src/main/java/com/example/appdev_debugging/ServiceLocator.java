@@ -13,7 +13,7 @@ import com.example.appdev_debugging.session.SessionManager;
 public final class ServiceLocator {
 
     public static final String DEMO_NAME = "Demo User";
-    public static final String DEMO_EMAIL = "demo@example.com";
+    public static final String DEMO_EMAIL = "demo@gmail.com";
     public static final String DEMO_PASSWORD = "Password123";
 
     private static AuthManager authManager;

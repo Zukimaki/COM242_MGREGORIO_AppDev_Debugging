@@ -47,15 +47,11 @@ public class LoginActivity extends AppCompatActivity{
         authManager = ServiceLocator.getAuthManager();
         sessionManager = ServiceLocator.getSessionManager(this);
 
-        // Auto-login: skip this screen if a valid session exists.
-        String savedEmail = sessionManager.getLoggedInEmail();
-        if (savedEmail != null) {
-            if (authManager.getUser(savedEmail) != null) {
-                openHomeAndFinish();
-                return;
-            }
-            // Session points to a user that no longer exists (in-memory store was wiped).
-            sessionManager.logout();
+        // A remembered session is persisted independently of this process.
+        // The demo user repository is in-memory, so it may not have a User after restart.
+        if (sessionManager.getLoggedInEmail() != null) {
+            openHomeAndFinish();
+            return;
         }
 
         setContentView(R.layout.activity_login);
@@ -103,7 +99,12 @@ public class LoginActivity extends AppCompatActivity{
     //       "Step Into" (F7) to follow the password all the way to where it is checked.
     //       Watch the value of the password variable at each step in the Variables panel.
     //    c) Identify the exact line that breaks it, fix it, and explain WHY it broke.
-    //
+
+    // Investigation note: In this version, PasswordHasher hashes the supplied string as-is.
+    // Registration and login both pass the original password to it, so uppercase letters are
+    // significant and are not converted. The demo password is registered through the same
+    // AuthManager path used for normal accounts.
+
     // TODO(DEBUG #2): Users with capital letters in their email can't log in after registering.
     //  Steps to reproduce (fix DEBUG #1 first so logins can succeed at all):
     //    1. Register with email "Juan.DelaCruz@Mail.com" and a valid password.
@@ -118,6 +119,13 @@ public class LoginActivity extends AppCompatActivity{
     //    c) Hint for investigation only: a HashMap compares keys with equals(), and "A".equals("a") is false.
     //    d) Fix it so email matching is case-insensitive everywhere, and add a unit test in
     //       AuthManagerTest that would have caught this bug.
+
+    // Answer:
+    // a) Lowercase emails work correctly, but emails with capital letters fail to log in and can be registered
+    // more than once. This happens because the HashMap treats uppercase and lowercase emails as different values.
+    // The fix is to convert all emails to lowercase before saving or checking them and add a unit test to make sure mixed-case
+    // emails work correctly.
+
     private void attemptLogin() {
         clearErrors();
 

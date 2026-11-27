@@ -20,9 +20,9 @@ public class SessionManager {
         currentEmail = email;
 
         if (rememberMe) {
-            prefs.edit().putString(KEY_EMAIL, email).apply();
+            prefs.edit().putString(KEY_EMAIL, email).commit();
         } else {
-            prefs.edit().remove(KEY_EMAIL).apply();
+            prefs.edit().remove(KEY_EMAIL).commit();
         }
     }
 
@@ -43,6 +43,6 @@ public class SessionManager {
         currentEmail = null;
 
         // Clear the saved login session.
-        prefs.edit().remove(KEY_EMAIL).apply();
+        prefs.edit().remove(KEY_EMAIL).commit();
     }
 }

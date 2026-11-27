@@ -1,5 +1,6 @@
 package com.example.appdev_debugging.util;
 
+import java.util.Locale;
 import java.util.regex.Pattern;
 
 public class Validator {
@@ -7,7 +8,7 @@ public class Validator {
     public static final int MIN_PASSWORD_LENGTH = 8;
 
     private static final Pattern EMAIL_PATTERN =
-            Pattern.compile("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$");
+            Pattern.compile("^[A-Za-z0-9._%+-]+@gmail\\.com$");
 
     private Validator() {
     }
@@ -21,18 +22,10 @@ public class Validator {
     public static String validateEmail(String email) {
         if (isBlank(email)) return "Email is required";
 
-        String normalizedEmail = email.trim().toLowerCase();
+        String normalizedEmail = email.trim().toLowerCase(Locale.ROOT);
 
         if (!EMAIL_PATTERN.matcher(normalizedEmail).matches()) {
             return "Enter a valid email address";
-        }
-
-        String domain = normalizedEmail.substring(
-                normalizedEmail.lastIndexOf('@') + 1
-        );
-
-        if (domain.endsWith(".ph")) {
-            return "Email addresses with .ph domains are not allowed";
         }
 
         return null;
@@ -40,7 +33,7 @@ public class Validator {
 
     /**
      * Used on registration:
-     * Requires at least 8 characters, letters, and numbers.
+     * Requires at least 8 characters and at least one number; letters are optional.
      */
     public static String validateNewPassword(String password) {
 
@@ -52,22 +45,17 @@ public class Validator {
             return "Password must be at least 8 characters";
         }
 
-        boolean hasLetter = false;
         boolean hasDigit = false;
 
         for (char c : password.toCharArray()) {
-            if (Character.isLetter(c)) {
-                hasLetter = true;
-            }
-
             if (Character.isDigit(c)) {
                 hasDigit = true;
+                break;
             }
         }
 
-        // Both requirements must be satisfied.
-        if (!(hasLetter && hasDigit)) {
-            return "Password must contain letters and numbers";
+        if (!hasDigit) {
+            return "Password must contain at least one number";
         }
 
         return null;

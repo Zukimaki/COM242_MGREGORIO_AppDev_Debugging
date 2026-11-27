@@ -12,7 +12,7 @@ import com.example.appdev_debugging.ServiceLocator;
 import com.example.appdev_debugging.data.model.User;
 import com.example.appdev_debugging.session.SessionManager;
 
-public class HomeActivity extends AppCompatActivity{
+public class    HomeActivity extends AppCompatActivity{
     private SessionManager sessionManager;
 
     @Override
@@ -21,14 +21,13 @@ public class HomeActivity extends AppCompatActivity{
 
         sessionManager = ServiceLocator.getSessionManager(this);
 
-        // Guard: if there's no valid session, bounce back to login.
+        // A remembered session survives process death even though the demo repository is in-memory.
         String email = sessionManager.getLoggedInEmail();
-        User user = email == null ? null : ServiceLocator.getAuthManager().getUser(email);
-        if (user == null) {
-            sessionManager.logout();
+        if (email == null) {
             goToLogin();
             return;
         }
+        User user = ServiceLocator.getAuthManager().getUser(email);
 
         setContentView(R.layout.activity_home);
 
@@ -36,8 +35,10 @@ public class HomeActivity extends AppCompatActivity{
         TextView tvEmail = findViewById(R.id.tvEmail);
         Button btnLogout = findViewById(R.id.btnLogout);
 
-        tvWelcome.setText(getString(R.string.home_welcome, user.getFullName()));
-        tvEmail.setText(getString(R.string.home_email, user.getEmail()));
+        String displayName = user == null ? email.substring(0, email.indexOf('@')) : user.getFullName();
+        String displayEmail = user == null ? email : user.getEmail();
+        tvWelcome.setText(getString(R.string.home_welcome, displayName));
+        tvEmail.setText(getString(R.string.home_email, displayEmail));
 
         // TODO(DEBUG #5): "Log out" sometimes doesn't really log the user out.
         //  Steps to reproduce (fix DEBUG #1 first):
@@ -53,6 +54,14 @@ public class HomeActivity extends AppCompatActivity{
         //       before login, after login, and after logout. What do you see?
         //    c) Find and fix the root cause. Do NOT fix it by adding extra code here in HomeActivity;
         //       fix the class that is actually responsible for the session.
+        // Answer
+        // a) Without "Remember me," the session is stored only in temporary memory and disappears after logout.
+        // With "Remember me," the session is saved in SharedPreferences, which remains even after closing the app.
+        // If logout does not delete the saved email, the app will automatically log the user back in after restarting.
+        // b) Before login, the XML file has no saved email. After logging in with "Remember me," the email is saved in the file.
+        // However, after logout, the email is still there, showing that the app failed to remove the saved session.
+        // c) Fixed by updating SessionManager.logout() to clear both the in-memory email (currentEmail) and remove the saved email from SharedPreferences (KEY_EMAIL), ensuring session data is completely removed upon logout.
+
         btnLogout.setOnClickListener(v -> {
             sessionManager.logout();
             goToLogin();
